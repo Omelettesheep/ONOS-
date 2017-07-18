@@ -4,9 +4,18 @@
     <meta charset="UTF-8">
     <title>虚拟网络生成</title>
     <link rel="stylesheet" href="css/normalize.css">
-    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="jointjs/jquery.js"></script>
+    <script src="jointjs/lodash.js"></script>
+    <script src="jointjs/backbone.js"></script>
+
+    <script src="jointjs/joint.min.js"></script>
+
+
+    <link rel="stylesheet" href="jointjs/joint.min.css">
     <script src="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.js"></script>
-    
+
+
 </head>
 <style>
     .wrapper{
@@ -20,23 +29,221 @@
         clear: both;
     }
     header{
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding-left: 20px;
+        color:white;
         height: 80px;
         width: 100%;
-        background-color: 
+        background-color: #2e252b;
     }
+    header .title{
+      font-size: 15px;
+    }
+
+    header ul{
+      margin: 0;
+      position: absolute;
+      right: 100px;
+
+    }
+    header ul li{
+      float: left;
+      display: inline-block;
+    }
+
+    i{
+      margin-right: 10px;
+    }
+
+    .content{
+      height: 100%;
+    }
+    aside{
+      width: 300px;
+      background-color: #2a3f54;
+      height: 100%;
+      text-align: left;
+      text-align: center;
+            float: left;
+    }
+
+    aside .title{
+      display: inline-block;
+      width: 100%;
+      font-size: 12px;
+      line-height: 30px;
+      height: 30px;
+      /*color: #ECF0F1;*/
+      background: #eee;
+      text-align: center;
+      font-weight: bold;
+
+    }
+
+
+    aside ul li a{
+      text-decoration: none;
+      display: inline-block;
+      width: 100%;
+      height: 40px;
+      line-height: 40px;
+      color:white;
+    }
+
+    aside ul li a:hover{
+      color:white;
+      text-decoration: none;
+      background-color: #374a5e;
+    }
+
+    .normal-node{
+      background: red;
+    }
+
+    .fw-node{
+      background: yellow;
+    }
+
+    .node{
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    li .model{
+      height: 50px;
+      width: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    aside ul li ul{
+      background: #eee;
+
+    }
+    .model .model-name {
+        margin-left: 80px;
+        display: inline-block;
+        text-align: left;
+        float: left;
+        line-height: 50px;
+    }
+    .model .model-desp{
+      position: absolute;
+      left: 176px;
+
+    }
+
+    .connection{
+      width: 95px;
+      height: 0px;
+      border: 2px solid;
+    }
+
+    .p2p-connection{
+      border-color: green;
+    }
+
+    .group{
+      width: 50px;
+      height: 40px;
+      border:1px solid;
+
+    }
+
+    .chain-group{
+      border-color:blue;
+    }
+
+    .order{
+      padding-left: 300px;
+      height: 100%;
+      width: 100%;
+    }
+    .ui-resizable-helper { border: 1px dotted gray; }
+
 </style>
 
 <body>
     <div class="wrapper">
         <header>
-            
+          <span class="title">基于ONOS的虚拟网络生成系统</span>
+          <ul>
+            <li><i class="glyphicon glyphicon-user"></i>yangyi</li>
+          </ul>
         </header>
         <div class="content">
-            <aside></aside>
+            <aside>
+
+              <span class="title"><i class="glyphicon glyphicon-list"></i>网络模型库</span>
+              <ul>
+                <li>
+                  <a>结点模型 (Node)</a>
+                  <ul>
+                      <li class="model">
+                         <span class="model-name">normal node</span>
+                         <div class="node normal-node model-desp"></div>
+                      </li>
+                      <li class="model">
+                         <span class="model-name">fw node</span>
+                         <div class="node fw-node model-desp"></div>
+                      </li>
+                  </ul>
+                </li>
+                <li>
+                  <a>连接模型(Connection)</a>
+                  <ul>
+                    <li class="model">
+                       <span class="model-name">p2p connection</span>
+                       <div class="connection p2p-connection model-desp"></div>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a>组模型(group)</a>
+                  <ul>
+                    <li class="model">
+                       <span class="model-name">chain group</span>
+                       <div class="group chain-group model-desp"></div>
+                    </li>
+                  </ul>
+                </li>
+
+              </ul>
+            </aside>
             <div class="order">
-                
+
             </div>
         </div>
     </div>
 </body>
+<script>
+  (function($){
+      $('.model-desp').draggable({
+        addClasses: false,
+        helper:"clone",   //允许一个 helper 元素用于拖拽显示。 original
+        cursor: "move"  //拖拽操作期间的 CSS 光标。
+
+      })
+
+      $('.order').droppable({
+        accept:'.model-desp',
+        drop:function(event,ui){
+          var new_signature = $(ui.helper).clone().removeClass('model-desp').addClass('ui-widget-content');
+          console.log(new_signature)
+          new_signature.draggable({
+            cursor: "move"
+          });
+          new_signature.resizable({
+            animate:true
+          })
+          $(this).append(new_signature);
+        }
+      })
+  })(jQuery);
+</script>
+
 </html>
