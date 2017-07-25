@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>虚拟网络生成</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.css">
+    <script src="jointjs/jquery.js"></script>
+    <script src="jointjs/lodash.js"></script>
+    <script src="jointjs/backbone.js"></script>
+
+    <script src="jointjs/joint.min.js"></script>
+
+
+    <link rel="stylesheet" href="jointjs/joint.min.css">
+    <link rel="stylesheet" href="css/network.css">
+    <script src="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.js"></script>
+    <script src='js/onos-network.js'></script>
+
+
+</head>
+<style>
+
+</style>
+<body>
+    <div class="wrapper">
+        <header>
+            <span class="title">基于ONOS的虚拟网络生成系统</span>
+            <ul>
+                <li><i class="glyphicon glyphicon-user"></i>yangyi</li>
+            </ul>
+        </header>
+        <div class="outer">
+            <aside>
+                <span class="title"><i class="glyphicon glyphicon-list"></i>网络模型库</span>
+                <ul>
+                    <li>
+                        <a>结点模型 (Node)</a>
+                        <ul data-modelName = 'node-models'>
+                            <li>
+                                <span class="model-name">nomal Node</span>
+                                <div class="node normal example" data-type='node-normal' >
+                                    <span class="inner-text">normal</span>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="model-name" >fw Node</span>
+                                <div class="node fw example" data-type='node-fw'>
+                                    <span class="inner-text">fw</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a>连接模型 (Connecton)</a>
+                        <ul data-modelName = 'connection-models'>
+                            
+                        </ul>
+                    </li>
+                </ul>
+            </aside>
+            <div class="panel node-panel">
+                <div class="title"><span>属性设置</span></div>
+                <form onsubmit = 'return false'>
+                    <div class="property">
+                        <ul>
+                            <li>
+                               <label for="node-name">名称</label>
+                               <input type="text" name="node-name">
+                            </li>
+                            <li>
+                                <label for="">id值</label>
+                                <input type="text" name="node-id" disabled=true />
+                            </li>
+                            <li>
+                                <label for="ip-address">IP地址</label>
+                                <input type="text" name="node-ip">
+                            </li>
+                            <li>
+                                <label for="mac-address">MAC地址</label>
+                                <input type="text" name="node-mac">
+                            </li>
+                        </ul>
+                        <button class="btn btn-primary node-panel-confirm">确认</button>
+                    </div> 
+                </form>
+            </div>
+            <div class="content">
+                <div class="order">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    ;(function($){
+        var clickCell;
+        var result = {
+            node:[],
+            connection:{}
+        }
+
+
+    //     //设置画布
+    //     var nodeDefault = {
+    //         width:90,
+    //         height:90
+    //     }
+
+        var graph = new joint.dia.Graph;
+        var paper = new joint.dia.Paper({ 
+            el: $('.order'), 
+            width: '100%', 
+            gridSize:10 , 
+            model: graph,
+            // linkPinning:true,
+            // interactive:true,
+            drawGrid: 'mesh'
+
+        });
+        /*点击的时候*/
+        paper.on('cell:pointerup ', function(evt, x, y) {
+           var model = evt.model;
+           clickCell = model;
+           var modelName = evt.model.id;
+           var modelType = modelName.split('-')[0];
+           switch(modelType){
+            case 'node':
+                nodePanelShow(model);
+                break;
+
+           }
+           // var funName = modelType+'PanelShow';
+           // var fun = eval(funName);
+           // new fun(model);
+        })
+        
+        // 点击空白处隐藏面板
+        paper.on('blank:pointerdown',function(evt,x,y){
+            $('.panel').hide('slow');
+        })
+
+        function getResultData(id,type){
+            var backData={};
+            $.each(result[type],function(index,item){
+                if(item.id === id){
+                    backData.data = item;
+                    backData.index = index;
+                    return false;
+                }
+            })
+            return backData;
+        }
+
+        function showInPanel(modelData,type){
+            for(var key in modelData.data){
+                $('input[name='+type+'-'+key+']').val(modelData.data[key])
+            }
+        }
+
+        function saveData(modelData,type){
+            for(var key in modelData.data){
+                result[type][modelData.index][key] = $('input[name='+type+'-'+key+']').val();
+            }
+
+
+        }
+
+        function nodePanelShow(model){
+            console.log(model);
+            var attributes = model.attributes;
+            var position = attributes.position;
+            var modelData = getResultData(model.id,'node');
+            showInPanel(modelData,'node');
+            // console.log(modelData);
+            $('.node-panel').css('left',(position.x)+'px').css('top',(position.y+70)).css('display','block')
+        }
+
+        function updatePanelInfo(modelData){
+            var text = modelData.data.name;
+             clickCell.attr({
+                '.label': { text: text, 'ref-x': .5, 'ref-y': .2 },
+            })
+
+        }
+
+        $('.node-panel-confirm').on('click',function(e){
+            e.stopPropagation();
+            var nodeId = $(this).parents('.panel').find('input[name=node-id]').val();
+            var modelData = getResultData(nodeId,'node');
+            saveData(modelData,'node');
+            updatePanelInfo(modelData);
+            $(this).parents('.panel').hide('slow');
+            console.log(result);
+            // jsonToUi(modelData,'node');
+            
+
+        })
+
+        //设置node节点可拖动
+        $('.node').draggable({
+            cursor: "move", 
+            helper:'clone',
+            drag:function(event,ui){
+
+                // console.log(ui.position);
+            },
+            stop:function(event,ui){
+                // 返回的是拖动过去需要创建的新图形的配置信息
+                var configData = setConfig(ui);
+                // 根据配置信息绘paper上的图形
+                var node = drawNode(graph,ui.position,configData);
+                nodePanelShow(node)
+                clickCell = node;
+                
+            }
+        })
+        
+        // 记录每个种类的模型的数量
+        var typeList = {};
+
+        function setConfig(ui){
+            var configData = function(){};
+            
+            var $prevObject = ui.helper.prevObject;
+            var type = $prevObject.data('type');
+            if(!typeList[type]){
+                typeList[type] = 0;
+            }
+            typeList[type]++;
+            // console.log($prevObject.find('.inner-text').html())
+            var borderWidth = $prevObject.css('border-width').split('px')[0];
+            configData.prototype = {
+                id:(function(){
+                    return type+'-'+typeList[type];
+                })(),
+                width:(function(){
+                    return $prevObject.width()+borderWidth*2;
+                })(),
+                height:(function(){
+                    return $prevObject.height()+borderWidth*2;
+                })(),
+                strokeColor:(function(){
+                    return $prevObject.css('border-color');
+                })(),
+                text:(function(){
+                    return $prevObject.find('.inner-text').html();
+                })(),
+            }
+            var c_d = new configData();
+            return c_d;
+        }
+
+
+        function drawNode(graph,position,configData){
+            var width = configData.width;
+            var height = configData.height;
+            var text = configData.text;
+            var strokeColor = configData.strokeColor;
+            var top = position.top;
+            var left = position.left-300;
+            var id = configData.id;
+            var nodeData = {};
+            nodeData.id = id;
+            nodeData.name = text;
+            nodeData.ip = '';
+            nodeData.mac = ''
+            result.node.push(nodeData);
+            var node = new joint.shapes.devs.Model({
+                id:id,
+                position: { x: left, y: top },
+                size: { width: width, height: height },
+                inPorts: ['in1','in2'],
+                outPorts: ['out'],
+                ports: {
+                    groups: {
+                        'in': {
+                            attrs: {
+                                '.port-body': {
+                                    fill: '#16A085'
+                                }
+                            }
+                        },
+                        'out': {
+                            attrs: {
+                                '.port-body': {
+                                    fill: '#E74C3C'
+                                }
+                            }
+                        }
+                    }
+                },
+                attrs: {
+                    '.label': { text: text, 'ref-x': .5, 'ref-y': .2 },
+                    rect: {  rx: '50%', ry: '50%', 'stroke-width': 2, stroke: strokeColor },
+                    // rect: { fill: '#2ECC71' }
+                }
+        });
+        graph.addCell(node);
+        console.log(node);
+        node.removeInPort('in1')
+        return node;
+
+        }
+        
+
+
+
+
+
+
+
+        
+        
+
+    })(jQuery)
+</script>
+</html>

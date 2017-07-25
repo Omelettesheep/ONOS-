@@ -5,6 +5,7 @@
     <title>虚拟网络生成</title>
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.css">
     <script src="jointjs/jquery.js"></script>
     <script src="jointjs/lodash.js"></script>
     <script src="jointjs/backbone.js"></script>
@@ -69,8 +70,7 @@
       text-align: center;
             float: left;
     }
-=======
-    }
+
     aside{
       width: 300px;
       background-color: #2a3f54;
@@ -169,12 +169,16 @@
       border-color:blue;
     }
     
-    .order{
-      padding-left: 300px;
+    .order-outer{
       height: 100%;
       width: 100%;
     }
     .ui-resizable-helper { border: 1px dotted gray; }
+    .inner{
+      margin-left: 300px;
+      height: 100%;
+    }
+
 
 
 </style>
@@ -226,7 +230,11 @@
 
               </ul>
             </aside>
-            <div class="order">
+            <div class="order-outer">
+              <div class="inner">
+                
+              </div>
+           
 
             </div>
         </div>
@@ -234,27 +242,45 @@
 </body>
 <script>
   (function($){
+      //设置模型可拖动
       $('.model-desp').draggable({
         addClasses: false,
         helper:"clone",   //允许一个 helper 元素用于拖拽显示。 original
-        cursor: "move"  //拖拽操作期间的 CSS 光标。
-
+        cursor: "move",  //拖拽操作期间的 CSS 光标。
+        drag:function(event,ui){
+          console.log(ui.position);
+        },
+        stop:function(event,ui){
+          console.log(ui.position);
+        }
+        
       })
-
-      $('.order').droppable({
+      
+      //设置定制模块可放置
+      $('.inner').droppable({
         accept:'.model-desp',
         drop:function(event,ui){
           var new_signature = $(ui.helper).clone().removeClass('model-desp').addClass('ui-widget-content');
-          console.log(new_signature)
+          //设置可移动
           new_signature.draggable({
             cursor: "move"
           });
-          new_signature.resizable({
-            animate:true
-          })
-          $(this).append(new_signature);
+          //设置可设置大小
+          new_signature.resizable()
+          
+          // $(this).append(new_signature);
         }
       })
+      
+      var graph = new joint.dia.Graph;
+      var paper = new joint.dia.Paper({
+        el:$('.inner'),
+        width:650,
+        height:600,
+        gridSize:1,
+        model:graph
+      })
+
   })(jQuery);
 </script>
 </html>
