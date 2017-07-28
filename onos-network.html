@@ -54,7 +54,25 @@
                     </li>
                     <li>
                         <a>连接模型 (Connecton)</a>
-                        <ul data-modelName = 'connection-models'>
+                        <ul name = 'connection-models' data-modelName = 'connection-models'>
+                            <li>
+                                <span class="model-connection" >p2p connection</span>
+                                <div class="connection p2p example" data-type='connection-p2p'></div>
+                                <!-- <button class="btn btn-primary">创建</button> -->
+                            </li>
+
+                            
+                        </ul>
+                    </li>
+                    <li>
+                        <a>流模型（Flow）</a>
+                        <ul name = 'flow-models' data-modelName = 'flow-models'>
+                            <li>
+                                <span class="model-flow" >flow</span>
+                                <div class="flow p2p example" data-type='flow-p2p'></div>
+                                <!-- <button class="btn btn-primary">创建</button> -->
+                            </li>
+
                             
                         </ul>
                     </li>
@@ -86,6 +104,43 @@
                     </div> 
                 </form>
             </div>
+            <div class="panel connection-panel">
+             <div class="title"><span>属性设置</span></div>
+                <form onsubmit = 'return false'>
+                    <div class="property">
+                        <ul>
+                            <li>
+                               <label for="node-name">名称</label>
+                               <input type="text" name="node-name">
+                            </li>
+                            <li>
+                                <label for="">id值</label>
+                                <input type="text" name="node-id" disabled=true />
+                            </li>
+                            <li class="dropdown">
+                                <label for="">一端node</label>
+                                <select name="connection-select" id="connection-select-1">
+                                    <option value="">node1</option>
+                                    <option value="">node3</option>
+                                    <option value="">node2</option>
+                                </select>
+
+                                <!-- <label for="ip-address">一端node</label> -->
+                                <!-- <input type="text" name="node-ip"> -->
+                            </li>
+                            <li>
+                                <label for="mac-address">另一端node</label>
+                                <select name="connection-select" id="connection-select-2">
+                                    <option value="">node1</option>
+                                    <option value="">node3</option>
+                                    <option value="">node2</option>
+                                </select>
+                            </li>
+                        </ul>
+                        <button class="btn btn-primary connection-panel-confirm">确认</button>
+                    </div> 
+                </form> 
+            </div>
             <div class="content">
                 <div class="order">
                 </div>
@@ -100,7 +155,7 @@
             node:[],
             connection:{}
         }
-
+        
 
     //     //设置画布
     //     var nodeDefault = {
@@ -116,7 +171,11 @@
             model: graph,
             // linkPinning:true,
             // interactive:true,
-            drawGrid: 'mesh'
+            drawGrid: 'mesh',
+            defaultLink: new joint.dia.Link({
+                attrs: { '.marker-target': { d: 'M 10 0 L 0 5 L 10 10 z' } }
+            }),
+            snapLinks: { radius: 75 }
 
         });
         /*点击的时候*/
@@ -194,7 +253,46 @@
             $(this).parents('.panel').hide('slow');
             console.log(result);
             // jsonToUi(modelData,'node');
-            
+        })
+
+            $('.connection-panel-confirm').on('click',function(e){
+                e.stopPropagation();
+                var node1 = $('#connection-select-1').val();
+                var node2 = $('#connection-select-2').val();
+               
+                var port1 = {
+                    'in3':{
+                        attrs:{
+                            '.port-body':{
+                                fill:'#eee'
+                            }
+                        }
+                    }
+
+                };
+                var port2 = {
+                    'in4':{
+                        attrs:{
+                            '.port-body':{
+                                fill:'#eee'
+                            }
+                        }
+                    }
+                }
+                
+               
+                var cell_node1 = graph.getCell(node1)
+                var cell_node2 = graph.getCell(node2)
+                // rect.addPort(port);
+                cell_node1.addPort(port1)
+                cell_node2.addPort(port2)
+
+                var link  =  new joint.dia.Link({
+                    source: { id: node1 ,port:port1},
+                    target: { id: node2, port: port2}
+                });
+                link.addTo(graph)
+                $(this).parents('.panel').hide('slow');
 
         })
 
@@ -216,6 +314,41 @@
                 
             }
         })
+
+
+
+        $('.connection').draggable({
+            cursor: "move", 
+            helper:'clone',
+            drag:function(event,ui){
+
+                // console.log(ui.position);
+            },
+            stop:function(event,ui){
+                // 返回的是拖动过去需要创建的新图形的配置信息
+                // var configData = setConfig(ui);
+                // 根据配置信息绘paper上的图形
+                // var node = drawNode(graph,ui.position,configData);
+                $('select[name=connection-select]').html('');
+                var optionArr = [];
+                $.each(result.node,function(index,item){
+                    optionArr[index] = '<option value='+item.id+'>'+
+                                            item.name+
+                                        '</option>'
+
+                })
+                $('select[name=connection-select]').html(optionArr.join(''));
+                connectionPanelShow();
+
+                // nodePanelShow(node)
+                // clickCell = node;
+                
+            }
+        })
+
+        function connectionPanelShow(){
+            $('.connection-panel').show();
+        }
         
         // 记录每个种类的模型的数量
         var typeList = {};
@@ -303,6 +436,31 @@
         return node;
 
         }
+
+        
+
+
+        graph.on('change:source change:target', function(link) {
+            var sourcePort = link.get('source').port;
+            var sourceId = link.get('source').id;
+            var targetPort = link.get('target').port;
+            var targetId = link.get('target').id;
+            console.log(sourcePort)
+            console.log(sourceId);
+            console.log(targetPort)
+            console.log(targetId)
+            var m = [
+                'The port <b>' + sourcePort,
+                '</b> of element with ID <b>' + sourceId,
+                '</b> is connected to port <b>' + targetPort,
+                '</b> of elemnt with ID <b>' + targetId + '</b>'
+            ].join('');
+    
+        out(m);
+        function out(m) {
+            $('#paper-link-out').html(m);
+        }
+});
         
 
 

@@ -183,3 +183,47 @@
       text-align: center;
 
     }
+
+    ul[name=connection-models] li, ul[name=flow-models] li{
+      width: 100%;
+      height: 100px;
+    }
+
+
+   .model-connection,.model-flow{
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 42px;
+   }
+
+    .connection{
+      width: 18%;
+      border:2px solid #99bbff;
+    }
+
+    .flow{
+      width: 18%;
+      border:2px dotted #99bbff;
+    }
+
+    .connection-panel{
+      position: absolute;
+      left: 50%;
+      top: 20%;
+    }
+
+    select{
+      text-align: center;
+      width: 172px;
+      display: inline-block;    
+      height: 24px;
+      border-radius: 5px;
+      padding: 0 0 0 60px;
+    }
+
+    .drop-panel-btn>span{
+      display: inline-block;
+      width: 195px;
+      border-right: 1px solid #d8d8d8;
+    }
+
