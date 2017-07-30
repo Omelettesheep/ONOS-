@@ -71,6 +71,10 @@
             float: left;
     }
 
+<<<<<<< Updated upstream
+=======
+    }
+>>>>>>> Stashed changes
     aside{
       width: 300px;
       background-color: #2a3f54;
@@ -165,13 +169,27 @@
 
     }
 
+    .content{
+      display: flex;
+
+    }
+
+
+
     .chain-group{
       border-color:blue;
     }
+<<<<<<< Updated upstream
     
     .order-outer{
       height: 100%;
       width: 100%;
+=======
+
+    .order{
+    flex: 1;
+    height: 100%;
+>>>>>>> Stashed changes
     }
     .ui-resizable-helper { border: 1px dotted gray; }
     .inner{
@@ -265,6 +283,7 @@
           new_signature.draggable({
             cursor: "move"
           });
+<<<<<<< Updated upstream
           //设置可设置大小
           new_signature.resizable()
           
@@ -281,6 +300,42 @@
         model:graph
       })
 
+=======
+          new_signature.resizable({
+            animate:true
+          })
+          // $(this).append(new_signature);
+        }
+      })
+
+      var graph = new joint.dia.Graph;
+
+      var paper = new joint.dia.Paper({
+
+    el: $('.order'),
+    width: 800,
+    height: 400,
+    gridSize: 1,
+    model: graph,
+    snapLinks: true,
+    linkPinning: false,
+    embeddingMode: true,
+    highlighting: {
+        'default': {
+            name: 'stroke',
+            options: {
+                padding: 6
+            }
+        },
+        'embedding': {
+            name: 'addClass',
+            options: {
+                className: 'highlighted-parent'
+            }
+        }
+    }
+});
+>>>>>>> Stashed changes
   })(jQuery);
 </script>
 </html>

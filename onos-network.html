@@ -61,7 +61,7 @@
                                 <!-- <button class="btn btn-primary">创建</button> -->
                             </li>
 
-                            
+
                         </ul>
                     </li>
                     <li>
@@ -73,7 +73,7 @@
                                 <!-- <button class="btn btn-primary">创建</button> -->
                             </li>
 
-                            
+
                         </ul>
                     </li>
                 </ul>
@@ -101,7 +101,7 @@
                             </li>
                         </ul>
                         <button class="btn btn-primary node-panel-confirm">确认</button>
-                    </div> 
+                    </div>
                 </form>
             </div>
             <div class="panel connection-panel">
@@ -110,19 +110,17 @@
                     <div class="property">
                         <ul>
                             <li>
-                               <label for="node-name">名称</label>
-                               <input type="text" name="node-name">
+                               <label for="conncection-name">名称</label>
+                               <input type="text" name="connection-name">
                             </li>
                             <li>
                                 <label for="">id值</label>
-                                <input type="text" name="node-id" disabled=true />
+                                <input type="text" name="connection-id" disabled=true />
                             </li>
                             <li class="dropdown">
                                 <label for="">一端node</label>
                                 <select name="connection-select" id="connection-select-1">
-                                    <option value="">node1</option>
-                                    <option value="">node3</option>
-                                    <option value="">node2</option>
+
                                 </select>
 
                                 <!-- <label for="ip-address">一端node</label> -->
@@ -131,15 +129,46 @@
                             <li>
                                 <label for="mac-address">另一端node</label>
                                 <select name="connection-select" id="connection-select-2">
-                                    <option value="">node1</option>
-                                    <option value="">node3</option>
-                                    <option value="">node2</option>
+
                                 </select>
                             </li>
                         </ul>
                         <button class="btn btn-primary connection-panel-confirm">确认</button>
-                    </div> 
-                </form> 
+                    </div>
+                </form>
+            </div>
+            <div class="panel flow-panel">
+             <div class="title"><span>属性设置</span></div>
+                <form onsubmit = 'return false'>
+                    <div class="property">
+                        <ul>
+                            <li>
+                               <label for="flow-name">名称</label>
+                               <input type="text" name="flow-name">
+                            </li>
+                            <li>
+                                <label for="">id值</label>
+                                <input type="text" name="flow-id" disabled=true />
+                            </li>
+                            <li class="dropdown">
+                                <label for="">src-node</label>
+                                <select name="flow-select" id="flow-select-1">
+
+                                </select>
+
+                                <!-- <label for="ip-address">一端node</label> -->
+                                <!-- <input type="text" name="node-ip"> -->
+                            </li>
+                            <li>
+                                <label for="flow-select">dst-node</label>
+                                <select name="flow-select" id="flow-select-2">
+
+                                </select>
+                            </li>
+                        </ul>
+                        <button class="btn btn-primary flow-panel-confirm">确认</button>
+                    </div>
+                </form>
             </div>
             <div class="content">
                 <div class="order">
@@ -153,9 +182,10 @@
         var clickCell;
         var result = {
             node:[],
-            connection:{}
+            connection:[],
+            flow:[]
         }
-        
+
 
     //     //设置画布
     //     var nodeDefault = {
@@ -164,10 +194,10 @@
     //     }
 
         var graph = new joint.dia.Graph;
-        var paper = new joint.dia.Paper({ 
-            el: $('.order'), 
-            width: '100%', 
-            gridSize:10 , 
+        var paper = new joint.dia.Paper({
+            el: $('.order'),
+            width: '100%',
+            gridSize:10 ,
             model: graph,
             // linkPinning:true,
             // interactive:true,
@@ -178,6 +208,11 @@
             snapLinks: { radius: 75 }
 
         });
+
+
+
+            // b.) or add a single port using API
+            // rect.addPort(port);
         /*点击的时候*/
         paper.on('cell:pointerup ', function(evt, x, y) {
            var model = evt.model;
@@ -194,7 +229,7 @@
            // var fun = eval(funName);
            // new fun(model);
         })
-        
+
         // 点击空白处隐藏面板
         paper.on('blank:pointerdown',function(evt,x,y){
             $('.panel').hide('slow');
@@ -213,6 +248,7 @@
         }
 
         function showInPanel(modelData,type){
+          console.log(modelData);
             for(var key in modelData.data){
                 $('input[name='+type+'-'+key+']').val(modelData.data[key])
             }
@@ -222,8 +258,6 @@
             for(var key in modelData.data){
                 result[type][modelData.index][key] = $('input[name='+type+'-'+key+']').val();
             }
-
-
         }
 
         function nodePanelShow(model){
@@ -255,50 +289,96 @@
             // jsonToUi(modelData,'node');
         })
 
+        // $('.connection-panel-confirm').on('click',function(e){
+        //     e.stopPropagation();
+        //
+        //     var modelData = getResultData(connectionId,'connection');
+        //     saveData(modelData,'connection');
+        //     updatePanelInfo(modelData);
+        //     $(this).parents('.panel').hide('slow');
+        //     console.log(result);
+        //     // jsonToUi(modelData,'node');
+        // })
+
             $('.connection-panel-confirm').on('click',function(e){
                 e.stopPropagation();
+                var connectionId = $('input[name=connection-id]').val();
+                var connectionData = getResultData(connectionId,'connection');
+                var connectionName = $('input[name=connection-name]').val();
+                result.connection[connectionData.index].connectionNodes = [];
+
                 var node1 = $('#connection-select-1').val();
                 var node2 = $('#connection-select-2').val();
-               
-                var port1 = {
-                    'in3':{
-                        attrs:{
-                            '.port-body':{
-                                fill:'#eee'
-                            }
-                        }
-                    }
-
-                };
-                var port2 = {
-                    'in4':{
-                        attrs:{
-                            '.port-body':{
-                                fill:'#eee'
-                            }
-                        }
-                    }
-                }
-                
-               
                 var cell_node1 = graph.getCell(node1)
                 var cell_node2 = graph.getCell(node2)
-                // rect.addPort(port);
-                cell_node1.addPort(port1)
-                cell_node2.addPort(port2)
-
+                result.connection[connectionData.index].connectionNodes.push(node1)
+                result.connection[connectionData.index].connectionNodes.push(node2)
+                result.connection[connectionData.index].name = connectionName;
+                console.log(result)
                 var link  =  new joint.dia.Link({
-                    source: { id: node1 ,port:port1},
-                    target: { id: node2, port: port2}
+                    source: { id: node1 },
+                    target: { id: node2},
+
+                });
+                link.attr({
+                    '.connection': { stroke: '#99bbff','stroke-width': 2},
+                });
+                link.label(0, {
+                      position: .5,
+                      attrs: {
+                      rect: { fill: 'white' },
+                      text: { fill: 'blue', text: connectionName }
+                    }
                 });
                 link.addTo(graph)
+                var connectionId = $(this).parents('.panel').find('input[name=connection-id]').val();
                 $(this).parents('.panel').hide('slow');
 
         })
 
+        $('.flow-panel-confirm').on('click',function(e){
+            e.stopPropagation();
+            var flowName = $('input[name=flow-name]').val();
+            var flowId = $('input[name=flow-id]').val();
+            var flowData = getResultData(flowId,'flow');
+
+
+            var node1 = $('#flow-select-1').val();
+            var node2 = $('#flow-select-2').val();
+            result.flow[flowData.index].src = node1;
+            result.flow[flowData.index].dst = node2;
+            result.flow[flowData.index].name = flowName;
+
+            var cell_node1 = graph.getCell(node1)
+            var cell_node2 = graph.getCell(node2)
+            var link  =  new joint.dia.Link({
+                source: { id: node1 },
+                target: { id: node2},
+
+            });
+            link.attr({
+                '.connection': { stroke: '#99bbff','stroke-width': 2},
+                // '.marker-source': { fill: 'red', d: 'M 10 0 L 0 5 L 10 10 z' },
+                 '.marker-target': { fill: 'yellow', d: 'M 10 0 L 0 5 L 10 10 z' }
+            });
+            link.label(0, {
+                  position: .5,
+                  attrs: {
+                  rect: { fill: 'white' },
+                  text: { fill: 'blue', text: flowName }
+                }
+            });
+
+            link.addTo(graph)
+            var flowId = $(this).parents('.panel').find('input[name=flow-id]').val();
+            $(this).parents('.panel').hide('slow');
+            console.log(result)
+
+    })
+
         //设置node节点可拖动
         $('.node').draggable({
-            cursor: "move", 
+            cursor: "move",
             helper:'clone',
             drag:function(event,ui){
 
@@ -311,14 +391,15 @@
                 var node = drawNode(graph,ui.position,configData);
                 nodePanelShow(node)
                 clickCell = node;
-                
+
+
             }
         })
 
 
 
         $('.connection').draggable({
-            cursor: "move", 
+            cursor: "move",
             helper:'clone',
             drag:function(event,ui){
 
@@ -326,7 +407,9 @@
             },
             stop:function(event,ui){
                 // 返回的是拖动过去需要创建的新图形的配置信息
-                // var configData = setConfig(ui);
+                console.log('connection',ui);
+                var configData = setConfig(ui);
+                drawConnection(configData);
                 // 根据配置信息绘paper上的图形
                 // var node = drawNode(graph,ui.position,configData);
                 $('select[name=connection-select]').html('');
@@ -338,24 +421,73 @@
 
                 })
                 $('select[name=connection-select]').html(optionArr.join(''));
-                connectionPanelShow();
+                var connectionData = getResultData(configData.id,'connection');
+                connectionPanelShow(connectionData);
 
                 // nodePanelShow(node)
                 // clickCell = node;
-                
+
             }
         })
 
-        function connectionPanelShow(){
-            $('.connection-panel').show();
+        $('.flow').draggable({
+          cursor: "move",
+          helper:'clone',
+          stop:function(event,ui){
+            console.log('flow',ui)
+            var configData = setConfig(ui);
+            drawFlow(configData);
+            $('select[name=flow-select]').html('');
+            var optionArr = [];
+            $.each(result.node,function(index,item){
+                optionArr[index] = '<option value='+item.id+'>'+
+                                        item.name+
+                                    '</option>'
+
+            })
+            $('select[name=flow-select]').html(optionArr.join(''));
+            var flowData = getResultData(configData.id,'flow');
+            flowPanelShow(flowData);
+
+          }
+
+
+        })
+
+        function drawConnection(configData){
+          var connectionData = {};
+          var id  = configData.id;
+          connectionData.id = id;
+          connectionData.name = id;
+          result.connection.push(connectionData);
+
         }
-        
+
+        function drawFlow(configData){
+          var flowData = {};
+          var id  = configData.id;
+          flowData.id = id;
+          flowData.name = id;
+          result.flow.push(flowData);
+
+        }
+
+        function connectionPanelShow(connectionData){
+          showInPanel(connectionData,'connection')
+          $('.connection-panel').show();
+        }
+
+        function flowPanelShow(flowData){
+          showInPanel(flowData,'flow')
+          $('.flow-panel').show();
+        }
+
         // 记录每个种类的模型的数量
         var typeList = {};
 
         function setConfig(ui){
             var configData = function(){};
-            
+
             var $prevObject = ui.helper.prevObject;
             var type = $prevObject.data('type');
             if(!typeList[type]){
@@ -400,30 +532,48 @@
             nodeData.ip = '';
             nodeData.mac = ''
             result.node.push(nodeData);
+            var port = {
+        id: 'abc',
+        group: 'a',
+        args: {},
+        label: {
+            position: {
+                name: 'top',
+                args: {}
+            },
+            markup: '<text class="label-text" fill="blue"/>'
+        },
+        attrs: { text: { text: 'port1' } },
+        markup: '<rect width="10" height="10" stroke="red"/>'
+    };
             var node = new joint.shapes.devs.Model({
                 id:id,
                 position: { x: left, y: top },
                 size: { width: width, height: height },
-                inPorts: ['in1','in2'],
-                outPorts: ['out'],
+                // inPorts: ['in1','in2'],
+                // outPorts: ['out'],
+                // ports: {
+                //     groups: {
+                //         'in': {
+                //             attrs: {
+                //                 '.port-body': {
+                //                     fill: '#16A085'
+                //                 }
+                //             }
+                //         },
+                //         'out': {
+                //             attrs: {
+                //                 '.port-body': {
+                //                     fill: '#E74C3C'
+                //                 }
+                //             }
+                //         }
+                //     }
+                // },
                 ports: {
-                    groups: {
-                        'in': {
-                            attrs: {
-                                '.port-body': {
-                                    fill: '#16A085'
-                                }
-                            }
-                        },
-                        'out': {
-                            attrs: {
-                                '.port-body': {
-                                    fill: '#E74C3C'
-                                }
-                            }
-                        }
-                    }
-                },
+           groups: {},
+           items: [ port ]
+       },
                 attrs: {
                     '.label': { text: text, 'ref-x': .5, 'ref-y': .2 },
                     rect: {  rx: '50%', ry: '50%', 'stroke-width': 2, stroke: strokeColor },
@@ -437,7 +587,7 @@
 
         }
 
-        
+
 
 
         graph.on('change:source change:target', function(link) {
@@ -455,13 +605,12 @@
                 '</b> is connected to port <b>' + targetPort,
                 '</b> of elemnt with ID <b>' + targetId + '</b>'
             ].join('');
-    
+
         out(m);
         function out(m) {
             $('#paper-link-out').html(m);
         }
 });
-        
 
 
 
@@ -469,8 +618,9 @@
 
 
 
-        
-        
+
+
+
 
     })(jQuery)
 </script>
