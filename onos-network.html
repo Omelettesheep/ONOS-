@@ -50,6 +50,18 @@
                                     <span class="inner-text">fw</span>
                                 </div>
                             </li>
+                            <li>
+                                <span class="model-name" >chain-group</span>
+                                <div class="node chain example" data-type='node-chain'>
+                                    <span class="inner-text">chain</span>
+                                </div>
+                            </li>
+                             <li>
+                                <span class="model-name" >l2-group</span>
+                                <div class="node l2 example" data-type='node-l2'>
+                                    <span class="inner-text">l2</span>
+                                </div>
+                            </li>
                         </ul>
                     </li>
                     <li>
@@ -58,6 +70,16 @@
                             <li>
                                 <span class="model-connection" >p2p connection</span>
                                 <div class="connection p2p example" data-type='connection-p2p'></div>
+                                <!-- <button class="btn btn-primary">创建</button> -->
+                            </li>
+                            <li>
+                                <span class="model-connection" >p2mp connection</span>
+                                <div class="connection p2mp example" data-type='connection-p2mp'></div>
+                                <!-- <button class="btn btn-primary">创建</button> -->
+                            </li>
+                            <li>
+                                <span class="model-connection" >mesh connection</span>
+                                <div class="connection mesh example" data-type='connection-mesh'></div>
                                 <!-- <button class="btn btn-primary">创建</button> -->
                             </li>
 
@@ -197,6 +219,7 @@
         var paper = new joint.dia.Paper({
             el: $('.order'),
             width: '100%',
+            height:'100%',
             gridSize:10 ,
             model: graph,
             // linkPinning:true,
@@ -387,8 +410,10 @@
             stop:function(event,ui){
                 // 返回的是拖动过去需要创建的新图形的配置信息
                 var configData = setConfig(ui);
+                var nodeType = ui.helper.prevObject[0].innerText
+                
                 // 根据配置信息绘paper上的图形
-                var node = drawNode(graph,ui.position,configData);
+                var node = drawNode(graph,ui.position,configData,nodeType);
                 nodePanelShow(node)
                 clickCell = node;
 
@@ -518,7 +543,7 @@
         }
 
 
-        function drawNode(graph,position,configData){
+        function drawNode(graph,position,configData,nodeType){
             var width = configData.width;
             var height = configData.height;
             var text = configData.text;
@@ -532,24 +557,16 @@
             nodeData.ip = '';
             nodeData.mac = ''
             result.node.push(nodeData);
-            var port = {
-        id: 'abc',
-        group: 'a',
-        args: {},
-        label: {
-            position: {
-                name: 'top',
-                args: {}
-            },
-            markup: '<text class="label-text" fill="blue"/>'
-        },
-        attrs: { text: { text: 'port1' } },
-        markup: '<rect width="10" height="10" stroke="red"/>'
-    };
+            var z = 0;
+            if(nodeType == 'chain'){
+                z = -1;
+            }
+           
             var node = new joint.shapes.devs.Model({
                 id:id,
                 position: { x: left, y: top },
                 size: { width: width, height: height },
+                z:z,
                 // inPorts: ['in1','in2'],
                 // outPorts: ['out'],
                 // ports: {
@@ -570,10 +587,7 @@
                 //         }
                 //     }
                 // },
-                ports: {
-           groups: {},
-           items: [ port ]
-       },
+            
                 attrs: {
                     '.label': { text: text, 'ref-x': .5, 'ref-y': .2 },
                     rect: {  rx: '50%', ry: '50%', 'stroke-width': 2, stroke: strokeColor },
